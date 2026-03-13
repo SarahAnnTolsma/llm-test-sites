@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickPay - Guest Payment</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    min-height: 100vh;
+  }
+  header {
+    background: #1a3a5c;
+    color: #fff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header .logo {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  header .logo span { color: #4fc3f7; }
+  header .tagline {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-left: auto;
+  }
+  .progress-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 16px 0;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .progress-step {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    position: relative;
+  }
+  .progress-step .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ddd;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 6px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.3s, color 0.3s;
+  }
+  .progress-step.active .dot { background: #1a3a5c; color: #fff; }
+  .progress-step.done .dot { background: #43a047; color: #fff; }
+  .progress-step.active { color: #1a3a5c; font-weight: 600; }
+  .container {
+    max-width: 520px;
+    margin: 24px auto;
+    padding: 0 16px 40px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 32px 28px;
+  }
+  .card h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
+    color: #1a3a5c;
+  }
+  .card .subtitle {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 24px;
+  }
+  .form-group {
+    margin-bottom: 18px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #d0d5dd;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-group input:focus {
+    border-color: #1a3a5c;
+  }
+  .form-group input.invalid {
+    border-color: #e53935;
+  }
+  .form-group .error-msg {
+    color: #e53935;
+    font-size: 12px;
+    margin-top: 4px;
+    min-height: 16px;
+  }
+  .form-row {
+    display: flex;
+    gap: 14px;
+  }
+  .form-row .form-group { flex: 1; }
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+  }
+  .btn-primary {
+    background: #1a3a5c;
+    color: #fff;
+  }
+  .btn-primary:hover { background: #15304d; }
+  .btn-primary:disabled {
+    background: #a0b4c8;
+    cursor: not-allowed;
+  }
+  .btn-success {
+    background: #43a047;
+    color: #fff;
+  }
+  .btn-success:hover { background: #388e3c; }
+
+  /* Bill overview */
+  .bill-box {
+    background: #f7f9fc;
+    border: 1.5px solid #d0d5dd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .bill-box .due-label {
+    font-size: 13px;
+    color: #e65100;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .bill-box .amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a3a5c;
+  }
+  .bill-box .account-info {
+    font-size: 13px;
+    color: #888;
+    margin-top: 6px;
+  }
+
+  /* Review */
+  .review-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 15px;
+  }
+  .review-row:last-child { border-bottom: none; }
+  .review-row .label { color: #777; }
+  .review-row .value { font-weight: 600; }
+  .review-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a3a5c;
+    border-top: 2px solid #1a3a5c;
+    margin-top: 4px;
+  }
+
+  /* Confirmation */
+  .confirm-icon {
+    width: 64px;
+    height: 64px;
+    background: #e8f5e9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    font-size: 32px;
+    color: #43a047;
+  }
+  .confirm-number {
+    text-align: center;
+    background: #f7f9fc;
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin: 16px 0 24px;
+    color: #1a3a5c;
+  }
+  .text-center { text-align: center; }
+
+  .hidden { display: none !important; }
+
+  footer {
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: #aaa;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Bright<span>Wave</span> Energy</div>
+  <div class="tagline">Guest Payment Portal</div>
+</header>
+
+<div class="progress-bar" id="progressBar">
+  <div class="progress-step active" data-step="1"><div class="dot">1</div>Account</div>
+  <div class="progress-step" data-step="2"><div class="dot">2</div>Amount</div>
+  <div class="progress-step" data-step="3"><div class="dot">3</div>Payment</div>
+  <div class="progress-step" data-step="4"><div class="dot">4</div>Review</div>
+  <div class="progress-step" data-step="5"><div class="dot">5</div>Done</div>
+</div>
+
+<div class="container">
+
+  <!-- Step 1: Account Lookup -->
+  <div class="card step" id="step1">
+    <h2>Find Your Account</h2>
+    <p class="subtitle">Enter your account number and billing zip code to look up your balance.</p>
+    <div class="form-group">
+      <label for="accountNumber">Account Number</label>
+      <input type="text" id="accountNumber" placeholder="e.g. 8201-4455-7890" maxlength="20" autocomplete="off">
+      <div class="error-msg" id="accountNumberErr"></div>
+    </div>
+    <div class="form-group">
+      <label for="zipCode">Billing Zip Code</label>
+      <input type="text" id="zipCode" placeholder="e.g. 30301" maxlength="10" autocomplete="off">
+      <div class="error-msg" id="zipCodeErr"></div>
+    </div>
+    <button class="btn btn-primary" id="btnStep1">Continue</button>
+  </div>
+
+  <!-- Step 2: Bill Overview + Payment Amount -->
+  <div class="card step hidden" id="step2">
+    <h2>Your Bill</h2>
+    <p class="subtitle">Review your balance and enter the amount you'd like to pay.</p>
+    <div class="bill-box">
+      <div class="due-label">&#9888; Due tomorrow &mdash; March 14, 2026</div>
+      <div class="amount">$148.63</div>
+      <div class="account-info">Account: <span id="billAccount"></span></div>
+    </div>
+    <div class="form-group">
+      <label for="payAmount">Enter how much you want to pay ($)</label>
+      <input type="text" id="payAmount" placeholder="148.63" autocomplete="off">
+      <div class="error-msg" id="payAmountErr"></div>
+    </div>
+    <button class="btn btn-primary" id="btnStep2">Next</button>
+  </div>
+
+  <!-- Step 3: Credit Card -->
+  <div class="card step hidden" id="step3">
+    <h2>Payment Method</h2>
+    <p class="subtitle">Enter your credit or debit card details.</p>
+    <div class="form-group">
+      <label for="cardName">Cardholder Name</label>
+      <input type="text" id="cardName" placeholder="Jane Doe" autocomplete="cc-name">
+      <div class="error-msg" id="cardNameErr"></div>
+    </div>
+    <div class="form-group">
+      <label for="cardNumber">Card Number</label>
+      <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
+      <div class="error-msg" id="cardNumberErr"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="cardExp">Expiration (MM/YY)</label>
+        <input type="text" id="cardExp" placeholder="03/27" maxlength="5" autocomplete="cc-exp">
+        <div class="error-msg" id="cardExpErr"></div>
+      </div>
+      <div class="form-group">
+        <label for="cardCvv">CVV</label>
+        <input type="text" id="cardCvv" placeholder="123" maxlength="4" autocomplete="cc-csc">
+        <div class="error-msg" id="cardCvvErr"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btnStep3">Review</button>
+  </div>
+
+  <!-- Step 4: Review -->
+  <div class="card step hidden" id="step4">
+    <h2>Review Your Payment</h2>
+    <p class="subtitle">Please confirm the details below before submitting.</p>
+    <div class="review-row"><span class="label">Account</span><span class="value" id="revAccount"></span></div>
+    <div class="review-row"><span class="label">Payment Amount</span><span class="value" id="revAmount"></span></div>
+    <div class="review-row"><span class="label">Payment Method</span><span class="value" id="revCard"></span></div>
+    <div class="review-row"><span class="label">Transaction Fee</span><span class="value">$1.50</span></div>
+    <div class="review-total"><span>Total Charge</span><span id="revTotal"></span></div>
+    <button class="btn btn-success" id="btnStep4" style="margin-top:24px">Pay Now</button>
+  </div>
+
+  <!-- Step 5: Confirmation -->
+  <div class="card step hidden" id="step5">
+    <div class="confirm-icon">&#10003;</div>
+    <h2 class="text-center">Payment Confirmed</h2>
+    <p class="subtitle text-center">Thank you for your payment! Your transaction has been processed successfully.</p>
+    <div class="confirm-number" id="confirmNumber"></div>
+    <div class="review-row"><span class="label">Amount Paid</span><span class="value" id="confAmount"></span></div>
+    <div class="review-row"><span class="label">Account</span><span class="value" id="confAccount"></span></div>
+    <div class="review-row"><span class="label">Date</span><span class="value" id="confDate"></span></div>
+    <button class="btn btn-primary" id="btnRestart" style="margin-top:24px">Make Another Payment</button>
+  </div>
+
+</div>
+
+<footer>&copy; 2026 BrightWave Energy. This is a demo page.</footer>
+
+<script>
+(function() {
+  const $ = id => document.getElementById(id);
+
+  // --- Utilities ---
+  function luhn(num) {
+    const digits = num.replace(/\D/g, '');
+    if (digits.length < 13 || digits.length > 19) return false;
+    let sum = 0;
+    let alt = false;
+    for (let i = digits.length - 1; i >= 0; i--) {
+      let n = parseInt(digits[i], 10);
+      if (alt) { n *= 2; if (n > 9) n -= 9; }
+      sum += n;
+      alt = !alt;
+    }
+    return sum % 10 === 0;
+  }
+
+  function setError(inputId, msg) {
+    $(inputId).classList.toggle('invalid', !!msg);
+    $(inputId + 'Err').textContent = msg || '';
+  }
+
+  function clearErrors(...ids) { ids.forEach(id => setError(id, '')); }
+
+  function save(k, v) { localStorage.setItem('bw_' + k, v); }
+  function load(k) { return localStorage.getItem('bw_' + k) || ''; }
+  function clearAll() {
+    ['account', 'zip', 'amount', 'cardName', 'cardLast4', 'cardNumber', 'cardExp', 'cardCvv'].forEach(
+      k => localStorage.removeItem('bw_' + k)
+    );
+  }
+
+  function goToStep(n) {
+    document.querySelectorAll('.step').forEach(el => el.classList.add('hidden'));
+    $('step' + n).classList.remove('hidden');
+    document.querySelectorAll('.progress-step').forEach(el => {
+      const s = parseInt(el.dataset.step);
+      el.classList.toggle('active', s === n);
+      el.classList.toggle('done', s < n);
+    });
+  }
+
+  // --- Card number formatting ---
+  $('cardNumber').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '').substring(0, 16);
+    this.value = v.replace(/(.{4})/g, '$1 ').trim();
+  });
+
+  // --- Expiration formatting ---
+  $('cardExp').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '').substring(0, 4);
+    if (v.length >= 3) v = v.substring(0, 2) + '/' + v.substring(2);
+    this.value = v;
+  });
+
+  // --- Step 1 ---
+  $('btnStep1').addEventListener('click', function() {
+    clearErrors('accountNumber', 'zipCode');
+    const acct = $('accountNumber').value.trim();
+    const zip = $('zipCode').value.trim();
+    let ok = true;
+    if (!acct) { setError('accountNumber', 'Account number is required.'); ok = false; }
+    if (!zip) { setError('zipCode', 'Zip code is required.'); ok = false; }
+    else if (!/^\d{5}(-\d{4})?$/.test(zip)) { setError('zipCode', 'Enter a valid 5-digit zip code.'); ok = false; }
+    if (!ok) return;
+    save('account', acct);
+    save('zip', zip);
+    $('billAccount').textContent = acct;
+    goToStep(2);
+  });
+
+  // --- Step 2 ---
+  $('btnStep2').addEventListener('click', function() {
+    clearErrors('payAmount');
+    const raw = $('payAmount').value.trim();
+    const amt = parseFloat(raw);
+    if (!raw || isNaN(amt) || amt <= 0) {
+      setError('payAmount', 'Enter a valid payment amount greater than $0.');
+      return;
+    }
+    if (amt > 10000) {
+      setError('payAmount', 'Maximum single payment is $10,000.');
+      return;
+    }
+    save('amount', amt.toFixed(2));
+    goToStep(3);
+  });
+
+  // --- Step 3 ---
+  $('btnStep3').addEventListener('click', function() {
+    clearErrors('cardName', 'cardNumber', 'cardExp', 'cardCvv');
+    const name = $('cardName').value.trim();
+    const num = $('cardNumber').value.trim();
+    const exp = $('cardExp').value.trim();
+    const cvv = $('cardCvv').value.trim();
+    let ok = true;
+
+    if (!name) { setError('cardName', 'Cardholder name is required.'); ok = false; }
+    if (!num) { setError('cardNumber', 'Card number is required.'); ok = false; }
+    else if (!luhn(num)) { setError('cardNumber', 'Invalid card number.'); ok = false; }
+
+    if (!exp) { setError('cardExp', 'Expiration date is required.'); ok = false; }
+    else if (!/^\d{2}\/\d{2}$/.test(exp)) { setError('cardExp', 'Use MM/YY format.'); ok = false; }
+    else {
+      const [mm, yy] = exp.split('/').map(Number);
+      if (mm < 1 || mm > 12) { setError('cardExp', 'Invalid month.'); ok = false; }
+      else {
+        const expDate = new Date(2000 + yy, mm);
+        if (expDate < new Date()) { setError('cardExp', 'Card is expired.'); ok = false; }
+      }
+    }
+
+    if (!cvv) { setError('cardCvv', 'CVV is required.'); ok = false; }
+    else if (!/^\d{3,4}$/.test(cvv)) { setError('cardCvv', 'Invalid CVV.'); ok = false; }
+
+    if (!ok) return;
+
+    const digits = num.replace(/\D/g, '');
+    save('cardName', name);
+    save('cardLast4', digits.slice(-4));
+    save('cardNumber', digits);
+    save('cardExp', exp);
+    save('cardCvv', cvv);
+
+    // Populate review
+    $('revAccount').textContent = load('account');
+    const payAmt = parseFloat(load('amount'));
+    $('revAmount').textContent = '$' + payAmt.toFixed(2);
+    $('revCard').textContent = 'Card ending in ' + digits.slice(-4);
+    $('revTotal').textContent = '$' + (payAmt + 1.50).toFixed(2);
+
+    goToStep(4);
+  });
+
+  // --- Step 4: Pay ---
+  $('btnStep4').addEventListener('click', function() {
+    const conf = 'BW-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    const payAmt = parseFloat(load('amount'));
+    $('confirmNumber').textContent = 'Confirmation #: ' + conf;
+    $('confAmount').textContent = '$' + (payAmt + 1.50).toFixed(2);
+    $('confAccount').textContent = load('account');
+    $('confDate').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    goToStep(5);
+  });
+
+  // --- Restart ---
+  $('btnRestart').addEventListener('click', function() {
+    clearAll();
+    $('accountNumber').value = '';
+    $('zipCode').value = '';
+    $('payAmount').value = '';
+    $('cardName').value = '';
+    $('cardNumber').value = '';
+    $('cardExp').value = '';
+    $('cardCvv').value = '';
+    goToStep(1);
+  });
+
+  // Start on step 1
+  goToStep(1);
+})();
+</script>
+</body>
+</html>
