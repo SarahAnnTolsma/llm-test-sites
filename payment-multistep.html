@@ -92,7 +92,7 @@
     margin-bottom: 6px;
     color: #555;
   }
-  .form-group input {
+  .form-group input:not([type="radio"]) {
     width: 100%;
     padding: 10px 14px;
     border: 1.5px solid #cdd5dd;
@@ -101,6 +101,10 @@
     transition: border-color 0.2s;
     outline: none;
   }
+  .form-group input[type="radio"] {
+    vertical-align: middle;
+    margin-right: 5px;
+  }
   .form-group input:focus { border-color: #0d4a6f; }
   .form-group input.invalid { border-color: #d32f2f; }
   .form-group .error-msg {
@@ -108,6 +112,11 @@
     font-size: 12px;
     margin-top: 4px;
     min-height: 16px;
+  }
+  .form-group h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: #0d4a6f;
   }
   .form-row {
     display: flex;
