@@ -270,18 +270,20 @@
   <!-- Step 3: Bill summary + payment amount -->
   <div class="card step hidden" id="step3">
     <h2>Payment Amount</h2>
-    <p class="subtitle">Enter the amount you'd like to pay today.</p>
+    <p class="subtitle">Account overview for <span id="acctRef"></span>.</p>
     <div class="balance-box">
-      <div class="due-label">&#9888; Past due &mdash; due May 6, 2026</div>
-      <div class="amount" id="balanceDue">$92.41</div>
-      <div class="meta">Account: <span id="acctRef"></span></div>
+      <div class="amount" id="balanceDue">$-92.41</div>
     </div>
     <div class="form-group">
-      <label for="payAmount">Payment Amount ($)</label>
-      <input type="text" id="payAmount" name="payment_amount" placeholder="92.41" autocomplete="off">
+      <h3>Select Option</h3>
+      <label>
+        <input type="radio" /> Enter a payment amount
+      </label>
+      <br>
+      <input type="text" id="payAmount" name="payment_amount" placeholder="Enter the amount" autocomplete="off">
       <div class="error-msg" id="payAmountErr"></div>
     </div>
-    <button class="btn btn-primary" id="btnStep3">Continue to Payment</button>
+    <button class="btn btn-primary" id="btnStep3">Add to cart</button>
   </div>
 
   <!-- Step 4: Card details -->
@@ -407,7 +409,7 @@
     save('zip', zip);
     $('acctRef').textContent = acct;
     $('overviewAcct').textContent = acct;
-    goToStep(2);
+    goToStep(3);
   });
 
   $('btnStep2').addEventListener('click', function() {
