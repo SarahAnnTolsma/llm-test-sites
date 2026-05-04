@@ -278,21 +278,21 @@
 
   <!-- Step 3: Bill summary + payment amount -->
   <div class="card step hidden" id="step3">
-    <h2>Payment Amount</h2>
-    <p class="subtitle">Account overview for <span id="acctRef"></span>.</p>
+    <h2>Credot Card Payments</h2>
+    <p class="subtitle">Overview for Account Number <span id="acctRef"></span>.</p>
     <div class="balance-box">
       <div class="amount" id="balanceDue">$-92.41</div>
     </div>
     <div class="form-group">
       <h3>Select Option</h3>
       <label>
-        <input type="radio" /> Enter a payment amount
+        <input checked type="radio" /> Enter a payment amount
       </label>
       <br>
       <input type="text" id="payAmount" name="payment_amount" placeholder="Enter the amount" autocomplete="off">
       <div class="error-msg" id="payAmountErr"></div>
     </div>
-    <button class="btn btn-primary" id="btnStep3">Add to cart</button>
+    <button class="btn btn-primary" id="btnStep3">Add to Cart</button>
   </div>
 
   <!-- Step 4: Card details -->
