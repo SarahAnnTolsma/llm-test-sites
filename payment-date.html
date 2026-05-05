@@ -305,6 +305,7 @@
     <div class="review-row"><span class="label">Payment Amount</span><span class="value" id="revAmount"></span></div>
     <div class="review-row"><span class="label">Payment Date</span><span class="value" id="revDate"></span></div>
     <div class="review-row"><span class="label">Payment Method</span><span class="value" id="revCard"></span></div>
+    <div class="review-row"><span class="label">Card Expiration</span><span class="value" id="revCardExp"></span></div>
     <div class="review-row"><span class="label">Convenience Fee</span><span class="value">$1.95</span></div>
     <div class="review-total"><span>Total Charge</span><span id="revTotal"></span></div>
     <button class="btn btn-success" id="btnStep4" style="margin-top:24px">Pay Now</button>
@@ -377,7 +378,7 @@
       const v = n % 100;
       return n + (s[(v - 20) % 10] || s[v] || s[0]);
     }
-    const formats = ['longOrdinalYear', 'mmddyy', 'mdyyyy', 'longOrdinal', 'today', 'tomorrow'];
+    const formats = ['longOrdinalYear', 'longPaddedYear', 'mmddyy', 'mdyyyy', 'longOrdinal', 'today', 'tomorrow'];
     const override = new URLSearchParams(window.location.search).get('format');
     const choice = formats.includes(override) ? override : formats[Math.floor(Math.random() * formats.length)];
     const date = new Date();
@@ -387,6 +388,7 @@
     const year = date.getFullYear();
     switch (choice) {
       case 'longOrdinalYear': return months[month] + ' ' + ordinal(day) + ', ' + year;
+      case 'longPaddedYear':  return months[month] + ' ' + String(day).padStart(2, '0') + ', ' + year;
       case 'mmddyy':          return String(month + 1).padStart(2, '0') + '/' + String(day).padStart(2, '0') + '/' + String(year).slice(-2);
       case 'mdyyyy':          return (month + 1) + '/' + day + '/' + year;
       case 'longOrdinal':     return months[month] + ' ' + ordinal(day);
@@ -478,6 +480,8 @@
     $('revAmount').textContent = '$' + payAmt.toFixed(2);
     $('revDate').textContent = payDate;
     $('revCard').textContent = 'Card ending in ' + digits.slice(-4);
+    const [expMm, expYy] = exp.split('/');
+    $('revCardExp').textContent = expMm + '/20' + expYy;
     $('revTotal').textContent = '$' + (payAmt + 1.95).toFixed(2);
 
     goToStep(4);
