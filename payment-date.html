@@ -303,7 +303,7 @@
     <p class="subtitle">Please confirm the details below before submitting.</p>
     <div class="review-row"><span class="label">Account</span><span class="value" id="revAccount"></span></div>
     <div class="review-row"><span class="label">Payment Amount</span><span class="value" id="revAmount"></span></div>
-    <div class="review-row"><span class="label">Payment Date</span><span class="value" id="revDate"></span></div>
+    <div class="review-row" id="revDateRow"><span class="label">Payment Date</span><span class="value" id="revDate"></span></div>
     <div class="review-row"><span class="label">Payment Method</span><span class="value" id="revCard"></span></div>
     <div class="review-row"><span class="label">Card Expiration</span><span class="value" id="revCardExp"></span></div>
     <div class="review-row"><span class="label">Convenience Fee</span><span class="value">$1.95</span></div>
@@ -319,7 +319,7 @@
     <div class="confirm-number" id="confirmNumber"></div>
     <div class="review-row"><span class="label">Amount</span><span class="value" id="confAmount"></span></div>
     <div class="review-row"><span class="label">Account</span><span class="value" id="confAccount"></span></div>
-    <div class="review-row"><span class="label">Payment Date</span><span class="value" id="confDate"></span></div>
+    <div class="review-row" id="confDateRow"><span class="label">Payment Date</span><span class="value" id="confDate"></span></div>
     <button class="btn btn-primary" id="btnRestart" style="margin-top:24px">Make Another Payment</button>
   </div>
 
@@ -380,6 +380,7 @@
     }
     const formats = ['longOrdinalYear', 'longPaddedYear', 'mmddyy', 'mdyyyy', 'longOrdinal', 'today', 'tomorrow'];
     const override = new URLSearchParams(window.location.search).get('format');
+    if (override === 'none') return null;
     const choice = formats.includes(override) ? override : formats[Math.floor(Math.random() * formats.length)];
     const date = new Date();
     if (choice === 'tomorrow') date.setDate(date.getDate() + 1);
@@ -473,12 +474,13 @@
     save('cardExp', exp);
 
     const payDate = pickPaymentDate();
-    save('payDate', payDate);
+    save('payDate', payDate == null ? '' : payDate);
 
     $('revAccount').textContent = load('account');
     const payAmt = parseFloat(load('amount'));
     $('revAmount').textContent = '$' + payAmt.toFixed(2);
-    $('revDate').textContent = payDate;
+    $('revDate').textContent = payDate || '';
+    $('revDateRow').classList.toggle('hidden', payDate == null);
     $('revCard').textContent = 'Card ending in ' + digits.slice(-4);
     const [expMm, expYy] = exp.split('/');
     $('revCardExp').textContent = expMm + '/20' + expYy;
@@ -493,7 +495,9 @@
     $('confirmNumber').textContent = 'Confirmation #: ' + conf;
     $('confAmount').textContent = '$' + (payAmt + 1.95).toFixed(2);
     $('confAccount').textContent = load('account');
-    $('confDate').textContent = load('payDate');
+    const savedDate = load('payDate');
+    $('confDate').textContent = savedDate;
+    $('confDateRow').classList.toggle('hidden', !savedDate);
     goToStep(5);
   });
 
