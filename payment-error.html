@@ -440,6 +440,8 @@
       return;
     }
 
+    ['cardName', 'cardNumber', 'cardExp', 'cardCvv'].forEach(id => { $(id).value = ''; });
+
     const banner = $('errorMessage');
     banner.textContent = pickErrorMessage();
     banner.classList.remove('hidden');
