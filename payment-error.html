@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harborlight Gas - Pay Your Bill</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #eef1f5;
+    color: #2b2b2b;
+    min-height: 100vh;
+  }
+  header {
+    background: #1f2d3d;
+    color: #fff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header .logo {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  header .logo span { color: #f5a623; }
+  header .tagline {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-left: auto;
+  }
+  .progress-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 16px 0;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .progress-step {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    position: relative;
+  }
+  .progress-step .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ddd;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 6px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.3s, color 0.3s;
+  }
+  .progress-step.active .dot { background: #1f2d3d; color: #fff; }
+  .progress-step.done .dot { background: #2e7d32; color: #fff; }
+  .progress-step.failed .dot { background: #c62828; color: #fff; }
+  .progress-step.active { color: #1f2d3d; font-weight: 600; }
+  .container {
+    max-width: 520px;
+    margin: 24px auto;
+    padding: 0 16px 40px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 32px 28px;
+  }
+  .card h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
+    color: #1f2d3d;
+  }
+  .card .subtitle {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 24px;
+  }
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #cdd5dd;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-group input:focus { border-color: #1f2d3d; }
+  .form-group input.invalid { border-color: #c62828; }
+  .form-group .error-msg {
+    color: #c62828;
+    font-size: 12px;
+    margin-top: 4px;
+    min-height: 16px;
+  }
+  .form-row {
+    display: flex;
+    gap: 14px;
+  }
+  .form-row .form-group { flex: 1; }
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+  }
+  .btn-primary {
+    background: #1f2d3d;
+    color: #fff;
+  }
+  .btn-primary:hover { background: #15202d; }
+  .btn-success {
+    background: #2e7d32;
+    color: #fff;
+  }
+  .btn-success:hover { background: #245d27; }
+  .btn-secondary {
+    background: #fff;
+    color: #1f2d3d;
+    border: 1.5px solid #1f2d3d;
+  }
+  .btn-secondary:hover { background: #f3f5f8; }
+
+  .balance-box {
+    background: #f5f7fa;
+    border: 1.5px solid #cdd5dd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .balance-box .due-label {
+    font-size: 13px;
+    color: #c05621;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .balance-box .amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f2d3d;
+  }
+  .balance-box .meta {
+    font-size: 13px;
+    color: #888;
+    margin-top: 6px;
+  }
+
+  .review-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 15px;
+  }
+  .review-row:last-child { border-bottom: none; }
+  .review-row .label { color: #777; }
+  .review-row .value { font-weight: 600; }
+  .review-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2d3d;
+    border-top: 2px solid #1f2d3d;
+    margin-top: 4px;
+  }
+
+  .error-icon {
+    width: 64px;
+    height: 64px;
+    background: #fdecea;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    font-size: 36px;
+    color: #c62828;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .error-banner {
+    background: #fdecea;
+    border: 1px solid #f5c6cb;
+    color: #8a1f1f;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 15px;
+    margin: 16px 0 24px;
+    text-align: center;
+    font-weight: 500;
+  }
+  .text-center { text-align: center; }
+
+  .hidden { display: none !important; }
+
+  footer {
+    text-align: center;
+    padding: 16px;
+    font-size: 12px;
+    color: #aaa;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Harbor<span>light</span> Gas</div>
+  <div class="tagline">Pay Your Bill</div>
+</header>
+
+<div class="progress-bar" id="progressBar">
+  <div class="progress-step active" data-step="1"><div class="dot">1</div>Account</div>
+  <div class="progress-step" data-step="2"><div class="dot">2</div>Amount</div>
+  <div class="progress-step" data-step="3"><div class="dot">3</div>Payment</div>
+</div>
+
+<div class="container">
+
+  <!-- Step 1: Account Lookup -->
+  <div class="card step" id="step1">
+    <h2>Find Your Account</h2>
+    <p class="subtitle">Enter your account number and service zip code to continue.</p>
+    <div class="form-group">
+      <label for="accountNumber">Account Number</label>
+      <input type="text" id="accountNumber" name="account_number" placeholder="e.g. 6601-7782-3344" maxlength="20" autocomplete="off">
+      <div class="error-msg" id="accountNumberErr"></div>
+    </div>
+    <div class="form-group">
+      <label for="zipCode">Service Zip Code</label>
+      <input type="text" id="zipCode" name="zip_code" placeholder="e.g. 02108" maxlength="10" autocomplete="off">
+      <div class="error-msg" id="zipCodeErr"></div>
+    </div>
+    <button class="btn btn-primary" id="btnStep1">Continue</button>
+  </div>
+
+  <!-- Step 2: Bill Overview + Amount -->
+  <div class="card step hidden" id="step2">
+    <h2>Your Bill</h2>
+    <p class="subtitle">Review your balance and enter the amount you'd like to pay.</p>
+    <div class="balance-box">
+      <div class="due-label">&#9888; Due in 6 days</div>
+      <div class="amount">$113.27</div>
+      <div class="meta">Account: <span id="billAccount"></span></div>
+    </div>
+    <div class="form-group">
+      <label for="payAmount">Payment Amount ($)</label>
+      <input type="text" id="payAmount" name="payment_amount" placeholder="113.27" autocomplete="off">
+      <div class="error-msg" id="payAmountErr"></div>
+    </div>
+    <button class="btn btn-primary" id="btnStep2">Next</button>
+  </div>
+
+  <!-- Step 3: Card details + payment submit (always fails) -->
+  <div class="card step hidden" id="step3">
+    <h2>Payment Method</h2>
+    <p class="subtitle">Enter your credit or debit card details.</p>
+    <div class="error-banner hidden" id="errorMessage"></div>
+    <div class="form-group">
+      <label for="cardName">Cardholder Name</label>
+      <input type="text" id="cardName" name="cardholder_name" placeholder="Jane Doe" autocomplete="cc-name">
+      <div class="error-msg" id="cardNameErr"></div>
+    </div>
+    <div class="form-group">
+      <label for="cardNumber">Card Number</label>
+      <input type="text" id="cardNumber" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
+      <div class="error-msg" id="cardNumberErr"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="cardExp">Expiration (MM/YY)</label>
+        <input type="text" id="cardExp" name="expiration" placeholder="03/27" maxlength="5" autocomplete="cc-exp">
+        <div class="error-msg" id="cardExpErr"></div>
+      </div>
+      <div class="form-group">
+        <label for="cardCvv">Security Code (CVV)</label>
+        <input type="text" id="cardCvv" name="security_code" placeholder="123" maxlength="4" autocomplete="cc-csc">
+        <div class="error-msg" id="cardCvvErr"></div>
+      </div>
+    </div>
+    <div class="review-row" style="margin-top:8px"><span class="label">Total Charge</span><span class="value" id="payTotal"></span></div>
+    <button class="btn btn-success" id="btnStep3" style="margin-top:16px">Pay Now</button>
+  </div>
+
+</div>
+
+<footer>&copy; 2026 Harborlight Gas. This is a demo page.</footer>
+
+<script>
+(function() {
+  const $ = id => document.getElementById(id);
+
+  function luhn(num) {
+    const digits = num.replace(/\D/g, '');
+    if (digits.length < 13 || digits.length > 19) return false;
+    let sum = 0;
+    let alt = false;
+    for (let i = digits.length - 1; i >= 0; i--) {
+      let n = parseInt(digits[i], 10);
+      if (alt) { n *= 2; if (n > 9) n -= 9; }
+      sum += n;
+      alt = !alt;
+    }
+    return sum % 10 === 0;
+  }
+
+  function setError(inputId, msg) {
+    $(inputId).classList.toggle('invalid', !!msg);
+    $(inputId + 'Err').textContent = msg || '';
+  }
+  function clearErrors(...ids) { ids.forEach(id => setError(id, '')); }
+
+  function save(k, v) { sessionStorage.setItem('hg_' + k, v); }
+  function load(k) { return sessionStorage.getItem('hg_' + k) || ''; }
+  function clearAll() {
+    ['account', 'zip', 'amount', 'cardName', 'cardLast4', 'cardExp'].forEach(
+      k => sessionStorage.removeItem('hg_' + k)
+    );
+  }
+
+  function goToStep(n) {
+    document.querySelectorAll('.step').forEach(el => el.classList.add('hidden'));
+    $('step' + n).classList.remove('hidden');
+    document.querySelectorAll('.progress-step').forEach(el => {
+      const s = parseInt(el.dataset.step);
+      el.classList.toggle('active', s === n);
+      el.classList.toggle('done', s < n);
+      el.classList.remove('failed');
+    });
+  }
+
+  function pickErrorMessage() {
+    const messages = [
+      'Your payment could not be processed.',
+      'Sorry, we cannot process your payment at this time.',
+      'We are unable to accept this card. Please try a different payment method.',
+      'This card is not supported. Please use a different card.',
+      'Your card was declined. Please try a different card.'
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
+  }
+
+  $('cardNumber').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '').substring(0, 16);
+    this.value = v.replace(/(.{4})/g, '$1 ').trim();
+  });
+
+  $('cardExp').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '').substring(0, 4);
+    if (v.length >= 3) v = v.substring(0, 2) + '/' + v.substring(2);
+    this.value = v;
+  });
+
+  $('btnStep1').addEventListener('click', function() {
+    clearErrors('accountNumber', 'zipCode');
+    const acct = $('accountNumber').value.trim();
+    const zip = $('zipCode').value.trim();
+    let ok = true;
+    if (!acct) { setError('accountNumber', 'Account number is required.'); ok = false; }
+    if (!zip) { setError('zipCode', 'Zip code is required.'); ok = false; }
+    else if (!/^\d{5}(-\d{4})?$/.test(zip)) { setError('zipCode', 'Enter a valid 5-digit zip code.'); ok = false; }
+    if (!ok) return;
+    save('account', acct);
+    save('zip', zip);
+    $('billAccount').textContent = acct;
+    goToStep(2);
+  });
+
+  $('btnStep2').addEventListener('click', function() {
+    clearErrors('payAmount');
+    const raw = $('payAmount').value.trim();
+    const amt = parseFloat(raw);
+    if (!raw || isNaN(amt) || amt <= 0) {
+      setError('payAmount', 'Enter a valid payment amount greater than $0.');
+      return;
+    }
+    if (amt > 10000) {
+      setError('payAmount', 'Maximum single payment is $10,000.');
+      return;
+    }
+    save('amount', amt.toFixed(2));
+    const payAmt = amt;
+    $('payTotal').textContent = '$' + (payAmt + 2.50).toFixed(2);
+    $('errorMessage').classList.add('hidden');
+    goToStep(3);
+  });
+
+  $('btnStep3').addEventListener('click', function() {
+    clearErrors('cardName', 'cardNumber', 'cardExp', 'cardCvv');
+    const name = $('cardName').value.trim();
+    const num = $('cardNumber').value.trim();
+    const exp = $('cardExp').value.trim();
+    const cvv = $('cardCvv').value.trim();
+    let ok = true;
+
+    if (!name) { setError('cardName', 'Cardholder name is required.'); ok = false; }
+    if (!num) { setError('cardNumber', 'Card number is required.'); ok = false; }
+    else if (!luhn(num)) { setError('cardNumber', 'Invalid card number.'); ok = false; }
+
+    if (!exp) { setError('cardExp', 'Expiration date is required.'); ok = false; }
+    else if (!/^\d{2}\/\d{2}$/.test(exp)) { setError('cardExp', 'Use MM/YY format.'); ok = false; }
+    else {
+      const [mm, yy] = exp.split('/').map(Number);
+      if (mm < 1 || mm > 12) { setError('cardExp', 'Invalid month.'); ok = false; }
+      else {
+        const expDate = new Date(2000 + yy, mm);
+        if (expDate < new Date()) { setError('cardExp', 'Card is expired.'); ok = false; }
+      }
+    }
+
+    if (!cvv) { setError('cardCvv', 'Security code is required.'); ok = false; }
+    else if (!/^\d{3,4}$/.test(cvv)) { setError('cardCvv', 'Invalid security code.'); ok = false; }
+
+    if (!ok) {
+      $('errorMessage').classList.add('hidden');
+      return;
+    }
+
+    const banner = $('errorMessage');
+    banner.textContent = pickErrorMessage();
+    banner.classList.remove('hidden');
+    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  goToStep(1);
+})();
+</script>
+</body>
+</html>
