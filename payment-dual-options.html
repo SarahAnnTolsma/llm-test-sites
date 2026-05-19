@@ -173,6 +173,17 @@
     margin-top: 6px;
     min-height: 16px;
   }
+  .auth-error-banner {
+    background: #fdecea;
+    border: 1px solid #f5c6cb;
+    color: #8a1f1f;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 14px;
+    margin-bottom: 18px;
+    text-align: center;
+    font-weight: 500;
+  }
 
   .btn {
     display: block;
@@ -298,6 +309,8 @@
   <div class="card step" id="step1">
     <h2>Find Your Account</h2>
     <p class="subtitle">Tell us about your account so we can look it up.</p>
+
+    <div class="auth-error-banner hidden" id="authError"></div>
 
     <div class="option-group" id="statusGroup">
       <div class="group-label"><label for="accountStatus">Account Status</label></div>
@@ -505,6 +518,7 @@
     clearErrors('phoneNumber', 'accountNumber', 'serviceEndDate', 'zipCode');
     setGroupError('statusErr', '');
     setGroupError('methodErr', '');
+    $('authError').classList.add('hidden');
 
     const status = $('accountStatus').value;
     const method = getSelected('lookup_method');
@@ -535,6 +549,14 @@
     else if (!/^\d{5}(-\d{4})?$/.test(zip)) { setError('zipCode', 'Enter a valid 5-digit zip code.'); ok = false; }
 
     if (!ok) return;
+
+    if (!(status === 'disconnected' && method === 'account')) {
+      const banner = $('authError');
+      banner.textContent = "We couldn't find an account matching the information you provided. Please check your details and try again.";
+      banner.classList.remove('hidden');
+      banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
 
     save('status', status);
     save('method', method);
